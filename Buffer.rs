@@ -51,7 +51,7 @@ impl BytePacketBuffer {
 
         Ok(res)
     }
-    fn read_qname(&mut self, outstr: &mut String) -> Result<()> {
+fn read_qname(&mut self, outstr: &mut String) -> Result<()> {
         let mut lpos = self.pos;
         //init jumper and make sure to keep a jumper limit
         let mut jumper = false;
@@ -64,4 +64,34 @@ impl BytePacketBuffer {
                 Err(format!("The jump count has exceeded the maximum jumps!").into());
             }
         }
-        
+        // we're at the first positon of the label and its always a length byte so
+        let len = self.get(pos)?;
+        // check if the bits are for a jump instruction
+        if (len & 0xc0) = 0xC0 {
+            if !jumped {
+                self.seek = self.pos + 2;
+            }
+            let byte2 = self.get(pos+1);
+            let offset = (((len as u16) ^ 0xC0 ) << 8) | byte2;
+            let pos = offset as usize;
+            let jumper = true;
+            let jumper_count += 1;
+            continue;
+        }
+        else {
+            pos += 1;
+            if len == 0 {
+                break;
+            }
+            outstr.push_str(Delim);
+            let string_buffer = self.get_range(pos , len as usize);
+            outstr.push_str(&String::from_utf8_lossy(string_buffer).to_lowercase());
+            Delim = ".";
+            pos += len as usize;
+        }
+    if !jumped {
+        self.seek(pos)?;
+    }
+    Ok()
+}
+

@@ -18,7 +18,22 @@ impl QueryType {
     }
 }
 pub enum Questions {
-    pub struct {
-        
+    pub struct dnsquestion {
+        pub name : String;
+        pub qtype : QueryType;
+    }
+    impl dnsquestion {
+        pub fn writer_new(name, qtype) -> dnsquestion{
+            dnsquestion{
+                name : name;
+                qtype : qtype;
+            }
+        }
+        pub fn reader(&mut self, name , qtype, buffer) -> dnsquestion{
+            buffer.read_qname(&mut self.name)?;
+            self.qtype = QueryType::from_num(buffer.read_u16());
+            let _ = buffer.read_u16()?;
+            Ok(());
+        }
     }
 }

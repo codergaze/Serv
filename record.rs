@@ -25,14 +25,31 @@ impl rec {
     match qtype {
         QueryType::A => {
             let raw_adr = byte.read_u32();
-            let adr = ipv4addr::new();
+            let adr = ipv4addr::new(
             ((raw_adr >> 24) & 0xFF) as u8,
             ((raw_adr >> 16) & 0xFF) as u8,
             ((raw_adr >> 8) & 0xFF) as u8,
             ((raw_adr >> 0) & 0xFF) as u8,
+            );
+            Ok (rec::A {
+                domain : domain;
+                adr : adr;
+                ttl : ttl;
+            }
+        )
         }
-        QueryType::UNKNOWN => {
+        QueryType::UNKNOWN(_) => {
+            buffer.step(data_len as usize)?;
+
+            Ok (rec::UNKNOWN {
+                domain : domain;
+                qtype : qtype;
+                ttl : ttl;
+                data_len : data_len;
+            }
+        )
+        }
             
         }
     }
-}
+

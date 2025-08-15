@@ -51,6 +51,29 @@ impl BytePacketBuffer {
 
         Ok(res)
     }
+    fn write(&mut self, val : u8) -> Result<()>{
+        if self.pos >= 512 {
+            return Err("the data exceeds 512 bytes !!");
+        }
+        self.buf(self.pos) = val;
+        self.pos += 1;
+    }
+    fn write_u8(&mut self, val : u8) -> Result<()> {
+        self.write(val)?;
+        Ok(());
+    }
+    fn write_u16(&mut self , val: u16) -> Result<()> {
+        self.write((val >> u8)as u8)?;
+        self.write((val && 0xFF)as u8)?;
+        Ok(())
+    }
+    fn write_u_32(&mut self , val : u32) -> Result<()> {
+        self.write(((val >> 24) & 0xFF)as u8)?;
+        self.write(((val >> 16) & 0xFF) as u8)?;
+        self.write(((val >> 8) & 0xFF) as u8)?;
+        self.write(((val >> 0) & 0xFF) as u8)?;
+        Ok(())
+    }
 fn read_qname(&mut self, outstr: &mut String) -> Result<()> {
         let mut lpos = self.pos;
         //init jumper and make sure to keep a jumper limit
